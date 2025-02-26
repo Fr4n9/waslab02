@@ -66,6 +66,15 @@ public class WoTServlet extends HttpServlet {
 			/*      ^
 		      The String variable requestBody contains the sent (JSON) Data. 
 		      Complete the implementation below.*/
+			JSONObject json = new JSONObject(requestBody);
+			String author = json.getString("author");
+			String text = json.getString("text");
+			Tweet tweet= tweetRepository.insertTweet(author, text);
+			//JSONObject json2 = new JSONObject(tweet);
+			JSONObject json2 = new JSONObject(tweet);
+
+			response.getWriter().println(json2.toString());
+
 			
 		}
 	}
@@ -74,7 +83,13 @@ public class WoTServlet extends HttpServlet {
 	// Implements DELETE http://localhost:8080/waslab02/tweets/:id
 	public void doDelete(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, ServletException {
+    	
+    	String requestUri = req.getRequestURI();
+    	String tweetIdString = requestUri.substring(BASE_TWEETS_URI.length()); 
+    	long tweetId = Long.parseLong(tweetIdString);
+		
+		if(!tweetRepository.deleteTweet(tweetId)) throw new ServletException("No va");
 
-		throw new ServletException("DELETE not yet implemented");
+		//throw new ServletException("DELETE not yet implemented");
 	}
 }

@@ -43,10 +43,17 @@ function handleLike(tweetID) {
 
 function handleDelete(tweetID) {
 	/*
-
 	 * TASK #4 
-
 	 */	
+	httpRequest = new XMLHttpRequest();
+	httpRequest.open('DELETE', apiTweetsEndpoint + "/" + tweetID, /*async*/true);
+	httpRequest.onload = function() { 
+		if (httpRequest.status == 200) { // 200 OK
+			// Corrección: eliminamos .element que estaba causando el error
+			document.getElementById("tweet_" + tweetID).remove();
+		}
+	};
+	httpRequest.send(null);  // no parameters needed
 }
 
 function generateTweetHTML(tweet, action) {  // action :== "Like" xor "Delete"
@@ -64,7 +71,12 @@ function fetchTweets() {
 			/*
 			 * TASK #2 -->
 			 */
-			document.getElementById("tweetList").innerHTML = tweetData;
+			var tweetList = JSON.parse(tweetData);
+			var tweetHTML = "";
+			tweetList.forEach(tweet =>{
+				tweetHTML += generateTweetHTML(tweet, "Like");
+			});
+			document.getElementById("tweetList").innerHTML = tweetHTML;
 		}
 	};
 	httpRequest.send(null); 
@@ -76,8 +88,19 @@ function submitTweet() {
 	/*
 	 * TASK #3 -->
 	 */
-	var alertMessage = "Someone ({0}) wants to insert a new tweet ('{1}'),\n but this feature is not implemented yet!";
-	alert(alertMessage.templateFormat(authorInput, textInput));
+	httpRequest = new XMLHttpRequest();
+	httpRequest.open('POST', apiTweetsEndpoint, /*async*/true);
+	httpRequest.onload = function() { 
+		if (httpRequest.status == 200) { // 200 OK
+			var newTweet = JSON.parse(httpRequest.responseText);
+			var tweetHTML= generateTweetHTML(newTweet, "Delete");
+			document.getElementById("tweetList").insertAdjacentHTML("afterbegin", tweetHTML);
+
+		}
+	};
+	httpRequest.setRequestHeader("Content-Type", "application/json");
+	httpRequest.send(JSON.stringify({author : authorInput,
+		 text : textInput}));  // no parameters needed
 
 	// Clear form fields
 	document.getElementById("tweetAuthor").value = "";
